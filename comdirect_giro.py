@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # coding: utf-8
 
 import argparse
@@ -5,6 +6,16 @@ import csv
 from datetime import datetime
 import re
 import locale
+
+
+def print_transaction(record):
+    print("{} * {}".format(
+        record['date'].strftime("%Y/%m/%d"),
+        record['payee']
+    ))
+    print("    {0}{1:38.2f} EUR".format("<category>", record['money']))
+    print("    {0}".format("Assets:Comdirect Giro"))
+
 
 if __name__ == '__main__':
     locale.setlocale(locale.LC_NUMERIC, "de_DE")
@@ -38,8 +49,6 @@ if __name__ == '__main__':
 
             # from here on out we should only have actual transactions
 
-            print(row)
-
             # parse date
             dt = datetime.strptime(row[1], '%d.%m.%Y')  # valuta
 
@@ -55,4 +64,4 @@ if __name__ == '__main__':
                 'money': abs(locale.atof(row[4].replace('.', '')))  # caveman parsing
             }
 
-            print(record)
+            print_transaction(record)
