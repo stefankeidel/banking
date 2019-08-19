@@ -9,12 +9,13 @@ import locale
 
 
 def print_transaction(record):
-    print("{} * {}".format(
+    print("{} {}".format(
         record['date'].strftime("%Y/%m/%d"),
         record['payee']
     ))
     print("    {0}{1:38.2f} EUR".format("<category>", record['money']))
-    print("    {0}".format("Assets:Comdirect Giro"))
+    print("    {0}".format("Assets:comdirect Giro"))
+    print("")
 
 
 if __name__ == '__main__':
@@ -38,14 +39,14 @@ if __name__ == '__main__':
 
     with open(args.file, encoding='latin-1') as csvfile:
         bankreader = csv.reader(csvfile, delimiter=';')
-        for row in bankreader:
-            # the first couple of rows have a summary or are empty
-            if bankreader.line_num < 6:
+        for row in reversed(list(bankreader)):
+            # catch last row and further empty rows
+            if len(row) < 1 or row[0] == 'Alter Kontostand' or row[0] == 'offen':
                 continue
 
-            # catch last row and further empty rows
-            if len(row) < 1 or row[0] == 'Alter Kontostand':
-                continue
+            # this is the header row, at which point we will want to end this
+            if row[0] == 'Buchungstag':
+                break
 
             # from here on out we should only have actual transactions
 
