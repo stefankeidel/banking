@@ -56,19 +56,12 @@ if __name__ == '__main__':
             # parse payee/creditor
             if row[2] == 'Übertrag / Überweisung':
                 result = extractor_ueberweisung.search(row[3])
-                if result is None:
-                    # this is usually income or something, may want to treat it differently
-                    result = extractor_others.search(row[3])
-                payee = result.group(2)
-            elif row[2] == 'Auszahlung GAA':
-                payee = 'Geldautomat'
             else:
                 result = extractor_others.search(row[3])
-                payee = result.group(2)
 
             record = {
                 'date': dt,
-                'payee': payee,
+                'payee': result.group(2),
                 'money': abs(locale.atof(row[4].replace('.', '')))  # caveman parsing
             }
 
