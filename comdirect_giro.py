@@ -32,8 +32,10 @@ if __name__ == '__main__':
         help='Filepath for export file'
     )
 
-    extractor_ueberweisung = re.compile("[\s]*(Empfänger):[\s]*(.+)(Kto\/IBAN)")
+    extractor_ueberweisung = re.compile("[\s]*(Empfänger):[\s]*(.+)(Kto\/IBAN|Ueberweisung)")
+    extractor_kv = re.compile("[\s]*(Buchungstext:\s*)([A-Za-z]+)")
     extractor_others = re.compile("[\s]*(Auftraggeber):[\s]*(.*)(Buchungstext:)")
+    extractor_others_no_text = re.compile("[\s]*(Auftraggeber):[\s]*(.*)(Buchungstext:)?")
 
     args = parser.parse_args()
 
@@ -59,9 +61,21 @@ if __name__ == '__main__':
                 if result is None:
                     # this is usually income or something, may want to treat it differently
                     result = extractor_others.search(row[3])
+
+                if result is None:
+                    result = extractor_others_no_text.search(row[3])
+
+                if result is None:
+                    result = extractor_kv.search(row[3])
+
+                if result is None:
+                    print(row)
                 payee = result.group(2)
             elif row[2] == 'Auszahlung GAA':
                 payee = 'Geldautomat'
+            elif row[2] == 'Kartenverfügung':
+                result = extractor_kv.search(row[3])
+                payee = result.group(2)
             else:
                 result = extractor_others.search(row[3])
                 payee = result.group(2)
