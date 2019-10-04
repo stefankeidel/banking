@@ -18,7 +18,7 @@ def parse_money(money):
     return abs(locale.atof(money.replace(".", "").replace("€", "")))
 
 
-if __name__ == "__main__":
+def translate_stuff(payee, account, category):
     account_map = {
         "Sparkasse": "Closed:Assets:Sparkasse",
         "BAFöG": "Closed:Liabilities:BAFöG",
@@ -37,14 +37,14 @@ if __name__ == "__main__":
     }
 
     category_map = {
-        "Everyday Expenses:Clothing",
-        "Everyday Expenses:Clothes",
-        "Taxes:Income Tax 2014",
-        "Monthly Bills:Electricity",
-        "Investment:Cosmos FondsBasisrente",
-        "Taxes:Income Tax 2015",
-        "Investment:Market",
-        "Everyday Expenses:Cash",
+        "Everyday Expenses:Clothing": "Expenses:Discretionary",
+        "Everyday Expenses:Clothes": "Expenses:Discretionary",
+        "Taxes:Income Tax 2014": "Expenses:Taxes",
+        "Monthly Bills:Electricity": "Expenses:Utilities",
+        "Investment:Cosmos FondsBasisrente": "Expenses:Investments",
+        "Taxes:Income Tax 2015": "Expenses:Taxes",
+        "Investment:Market": "Expenses:Investments",
+        "Everyday Expenses:Cash": "Expenses:Cash",
         "Savings Goals:Saved Rent Liz",
         "Savings Goals:Emergency Fund",
         "Monthly Bills:iMac Credit",
@@ -82,6 +82,11 @@ if __name__ == "__main__":
         "Everyday Expenses:Transportation",
     }
 
+    return payee, account_map[account], category_map[category]
+
+
+if __name__ == "__main__":
+
     locale.setlocale(locale.LC_NUMERIC, "de_DE")
 
     parser = argparse.ArgumentParser(
@@ -107,9 +112,11 @@ if __name__ == "__main__":
             else:
                 money = parse_money(row["Inflow"])
 
-            # print_transaction(dt, row["Payee"], row['\ufeff"Account"'], row["Category"], money)
+            payee, account, category = translate_stuff(
+                row["Payee"], row['\ufeff"Account"'], row["Category"]
+            )
+
+            print_transaction(dt, payee, account, category, money)
 
             accounts.add(row['\ufeff"Account"'])
             categories.add(row["Category"])
-
-    print(categories)
