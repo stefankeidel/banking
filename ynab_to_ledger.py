@@ -5,7 +5,11 @@ import argparse
 import csv
 import locale
 from datetime import datetime
-import pudb; pu.db
+#import pudb; pu.db
+
+
+class SkipTransactionException(Exception):
+    pass
 
 
 def print_transaction(date, payee, account, category, amount):
@@ -19,7 +23,7 @@ def parse_money(money):
     return abs(locale.atof(money.replace(".", "").replace("€", "")))
 
 
-def translate_stuff(payee, account, category):
+def translate_stuff(payee, account, category, money):
     account_map = {
         "Sparkasse": "Closed:Assets:Sparkasse",
         "BAFöG": "Closed:Liabilities:BAFöG",
@@ -85,6 +89,11 @@ def translate_stuff(payee, account, category):
 
     # Transfers are direct interactions between accounts
     if payee.startswith('Transfer :'):
+        # this is to make sure we only import one side of the transfer
+        # as in the original exports we have two transactions for the same
+        if money < 0:
+            raise SkipTransactionException()
+
         source_acct = payee.split(':')[-1].strip()
         category = account_map[source_acct]
     elif payee == 'Starting Balance':
@@ -124,11 +133,16 @@ if __name__ == "__main__":
             if parse_money(row["Outflow"]) > 0:
                 money = parse_money(row["Outflow"])
             else:
-                money = parse_money(row["Inflow"])
+                # this is a bit counterintuitive but it has to do
+                # with the order we print the transaction in :shrug:
+                money = -1 * parse_money(row["Inflow"])
 
-            payee, account, category = translate_stuff(
-                row["Payee"], row['\ufeff"Account"'], row["Category"]
-            )
+            try:
+                payee, account, category = translate_stuff(
+                    row["Payee"], row['\ufeff"Account"'], row["Category"], money
+                )
+            except SkipTransactionException:
+                continue
 
             print_transaction(dt, payee, account, category, money)
 
