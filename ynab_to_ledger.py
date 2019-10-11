@@ -5,11 +5,12 @@ import argparse
 import csv
 import locale
 from datetime import datetime
+import pudb; pu.db
 
 
 def print_transaction(date, payee, account, category, amount):
     print("{} {}".format(date.strftime("%Y/%m/%d"), payee))
-    print("    {0}\t\t\t{1:.2f} EUR".format(category, amount))
+    print("    {0:<50}{1:.2f} EUR".format(category, amount))
     print("    {0}".format(account))
     print("")
 
@@ -26,7 +27,7 @@ def translate_stuff(payee, account, category):
         "GLS Giro": "Assets:GLS Giro",
         "Norisbank TG": "Closed:Assets:Norisbank TG",
         "Norisbank Giro": "Closed:Assets:Norisbank Giro",
-        "GLS Depot": None,
+        "GLS Depot": 'Assets:REPLACEME',
         "comdirect Giro": "Assets:comdirect Giro",
         "Amazon VISA": "Closed:Liabilities:Amazon VISA",
         "comdirect TG": "Assets:comdirect Tagesgeld",
@@ -45,44 +46,57 @@ def translate_stuff(payee, account, category):
         "Taxes:Income Tax 2015": "Expenses:Taxes",
         "Investment:Market": "Expenses:Investments",
         "Everyday Expenses:Cash": "Expenses:Cash",
-        "Savings Goals:Saved Rent Liz",
-        "Savings Goals:Emergency Fund",
-        "Monthly Bills:iMac Credit",
-        "Savings Goals:US Visa Fees",
-        "Everyday Expenses:Groceries",
-        "Everyday Expenses:Spending Money",
-        "Savings Goals:Airbnb SFO",
-        "Savings Goals:Vacation",
-        "Everyday Expenses:Discretionary",
-        "Monthly Bills:Business Expenses",
-        "Everyday Expenses:Restaurants/Takeout",
-        "Everyday Expenses:Public Transport",
-        "Income:Available this month",
-        "Savings Goals:MacBook",
-        "Savings Goals:30. Geburtstag",
-        "Taxes:Income Tax 2016",
-        "Income:Available next month",
-        "Yearly Bills:Boris Deposit",
-        "Savings Goals:Northeast Trip 2018",
-        "Yearly Bills:Insurance",
-        "Monthly Bills:Housekeeping",
-        "Taxes:Income Tax 2013",
-        "Savings Goals:Big Purchase/Gift Fund",
-        "Monthly Bills:Cable/Subscriptions",
-        "Savings Goals:Berlin Vaca",
-        "Savings Goals:NYC X-Mas",
-        "Monthly Bills:Health Insurance",
-        "Savings Goals:Pay back BAFöG",
-        "Everyday Expenses:Mandatory",
-        "Taxes:VAT",
-        "Monthly Bills:Phone/Mobile/Internet",
-        "Savings Goals:NYC",
-        "Monthly Bills:Rent",
-        "Pre-YNAB Debt:Amazon VISA",
-        "Everyday Expenses:Transportation",
+        "Savings Goals:Saved Rent Liz": "Income:Rent",
+        "Savings Goals:Emergency Fund": "Misc:Emergency Fund",
+        "Monthly Bills:iMac Credit": "Expenses:Discretionary",
+        "Savings Goals:US Visa Fees": "Expenses:US Visa",
+        "Everyday Expenses:Groceries": "Expenses:Mandatory",
+        "Everyday Expenses:Spending Money": "Expenses:Discretionary",
+        "Savings Goals:Airbnb SFO": "Expenses:Travel",
+        "Savings Goals:Vacation": "Expenses:Travel",
+        "Everyday Expenses:Discretionary": "Expenses:Discretionary",
+        "Monthly Bills:Business Expenses": "Expenses:Business",
+        "Everyday Expenses:Restaurants/Takeout": "Expenses:Discretionary",
+        "Everyday Expenses:Public Transport": "Expenses:Transportation",
+        "Income:Available this month": "Income:Generic",
+        "Savings Goals:MacBook": "Expenses:Misc",
+        "Savings Goals:30. Geburtstag": "Expenses:Misc",
+        "Taxes:Income Tax 2016": "Expenses:Taxes",
+        "Income:Available next month": "Income:Generic",
+        "Yearly Bills:Boris Deposit": "Expenses:Misc",
+        "Savings Goals:Northeast Trip 2018": "Expenses:Travel",
+        "Yearly Bills:Insurance": "Expenses:Insurance",
+        "Monthly Bills:Housekeeping": "Expenses:Discretionary",
+        "Taxes:Income Tax 2013": "Expenses:Taxes",
+        "Savings Goals:Big Purchase/Gift Fund": "Expenses:Misc",
+        "Monthly Bills:Cable/Subscriptions": "Expenses:Subscriptions",
+        "Savings Goals:Berlin Vaca": "Expenses:Travel",
+        "Savings Goals:NYC X-Mas": "Expenses:Travel",
+        "Monthly Bills:Health Insurance": "Expenses:Insurance",
+        "Savings Goals:Pay back BAFöG": "Expenses:Debt",
+        "Everyday Expenses:Mandatory": "Expenses:Mandatory",
+        "Taxes:VAT": "Expenses:Taxes",
+        "Monthly Bills:Phone/Mobile/Internet": "Expenses:Utilities",
+        "Savings Goals:NYC": "Expenses:Travel",
+        "Monthly Bills:Rent": "Expenses:Rent",
+        "Pre-YNAB Debt:Amazon VISA": "Expenses:Misc",
+        "Everyday Expenses:Transportation": "Expenses:Transportation",
     }
 
-    return payee, account_map[account], category_map[category]
+    # Transfers are direct interactions between accounts
+    if payee.startswith('Transfer :'):
+        source_acct = payee.split(':')[-1].strip()
+        category = account_map[source_acct]
+    elif payee == 'Starting Balance':
+        category = 'Equity:Opening Balances'
+    elif payee == 'Reconciliation Balance Adjustment':
+        category = 'Income:Capital Gains'
+    elif category == '':
+        category = 'Misc:Misc'
+    else:
+        category = category_map[category]
+
+    return payee, account_map[account], category
 
 
 if __name__ == "__main__":
