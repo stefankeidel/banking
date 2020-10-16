@@ -32,6 +32,8 @@ def main(gls_filename):
 
         df = pd.DataFrame(df_l[1:], columns=df_l[0])
 
+    print('#### Added by GLS importer. Please check the transactions below very carefully.')
+
     for index, row in df.iterrows():
         dt = datetime.strptime(row["Valuta"], "%d.%m.%Y")
 
