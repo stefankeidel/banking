@@ -27,7 +27,7 @@ def main(gls_filename):
             if len(df_l) > 0 and len(row) == 0:
                 break
 
-            if len(df_l) > 0:
+            if len(df_l) > 0 and len(row[1]) > 0:
                 df_l.append(row)
 
         df = pd.DataFrame(df_l[1:], columns=df_l[0])
@@ -35,6 +35,9 @@ def main(gls_filename):
     print('#### Added by GLS importer. Please check the transactions below very carefully.')
 
     for index, row in df.iterrows():
+        if row["Valuta"] == '30.02.2021':
+            row["Valuta"] = '28.02.2021'
+
         dt = datetime.strptime(row["Valuta"], "%d.%m.%Y")
 
         # from here we could literally print as is, or
@@ -42,18 +45,18 @@ def main(gls_filename):
         #
         # for now, I think we'll do the categories by hand
 
-        if row[' '] == 'S': # Soll == Outflow
+        if row['Soll/Haben'] == 'S': # Soll == Outflow
             print_transaction(
                 dt,
-                row['Empfänger/Zahlungspflichtiger'],
+                row['Zahlungsempfänger'],
                 'Assets:GLS Giro',
                 'Expenses:TODO',
                 parse_money(row['Umsatz'])
             )
-        elif row[' '] == 'H': # Haben = Income
+        elif row['Soll/Haben'] == 'H': # Haben = Income
             print_transaction(
                 dt,
-                row['Empfänger/Zahlungspflichtiger'],
+                row['Zahlungsempfänger'],
                 'Income:TODO',
                 'Assets:GLS Giro',
                 parse_money(row['Umsatz'])

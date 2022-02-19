@@ -19,9 +19,10 @@ def print_transaction(record):
 
 def main():
     locale.setlocale(locale.LC_ALL, "de_DE")
-    print("Date,Payee,Category,Memo,Outflow,Inflow")
 
     with codecs.open(sys.argv[1], "r", "iso-8859-1") as f:
+        print('#### Added by CoDi importer. Please check the transactions below very carefully.')
+
         r = csv.reader(f, delimiter=';', quotechar='"')
         foreign = False
         foreignadd = 0
