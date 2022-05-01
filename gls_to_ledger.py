@@ -20,7 +20,7 @@ def main(gls_filename):
         reader = csv.reader(f, delimiter=';')
         df_l = []
         for row in reader:
-            if len(row) > 0 and row[0] == 'Buchungstag':
+            if len(row) > 0 and row[0] == 'Bezeichnung Auftragskonto':
                 df_l.append(row)
                 continue
 
@@ -35,31 +35,33 @@ def main(gls_filename):
     print('#### Added by GLS importer. Please check the transactions below very carefully.')
 
     for index, row in df.iterrows():
-        if row["Valuta"] == '30.02.2021':
-            row["Valuta"] = '28.02.2021'
+        if row["Valutadatum"] == '30.02.2022':
+            row["Valutadatum"] = '28.02.2022'
 
-        dt = datetime.strptime(row["Valuta"], "%d.%m.%Y")
+        dt = datetime.strptime(row["Valutadatum"], "%d.%m.%Y")
 
         # from here we could literally print as is, or
         # add some business logic to automate certain workflows
         #
         # for now, I think we'll do the categories by hand
 
-        if row['Soll/Haben'] == 'S': # Soll == Outflow
+        money = parse_money(row['Betrag'])
+
+        if money < 0: # Outflow
             print_transaction(
                 dt,
-                row['Zahlungsempfänger'],
+                row['Name Zahlungsbeteiligter'],
                 'Assets:GLS Giro',
                 'Expenses:TODO',
-                parse_money(row['Umsatz'])
+                money
             )
-        elif row['Soll/Haben'] == 'H': # Haben = Income
+        else: # Haben = Income
             print_transaction(
                 dt,
-                row['Zahlungsempfänger'],
+                row['Name Zahlungsbeteiligter'],
                 'Income:TODO',
                 'Assets:GLS Giro',
-                parse_money(row['Umsatz'])
+                money
             )
 
 
