@@ -16,7 +16,7 @@ def parse_money(money):
     return abs(locale.atof(money.replace(".", "")))
 
 def main(gls_filename):
-    with open(gls_filename, encoding='ISO-8859-1') as f:
+    with open(gls_filename, encoding='utf-8') as f:
         reader = csv.reader(f, delimiter=';')
         df_l = []
         for row in reader:
@@ -47,7 +47,7 @@ def main(gls_filename):
 
         money = parse_money(row['Betrag'])
 
-        if money < 0: # Outflow
+        if row['Betrag'][0] == '-': # Outflow
             print_transaction(
                 dt,
                 row['Name Zahlungsbeteiligter'],
