@@ -35,7 +35,7 @@ def main(gls_filename):
     print('#### Added by GLS importer. Please check the transactions below very carefully.')
 
     for index, row in df.iterrows():
-        if row["Valutadatum"] == '30.02.2022':
+        if row["Valutadatum"] in ['30.02.2022', '30.02.2023']:
             row["Valutadatum"] = '28.02.2022'
 
         dt = datetime.strptime(row["Valutadatum"], "%d.%m.%Y")

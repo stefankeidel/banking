@@ -14,7 +14,7 @@ def print_transaction(date, payee, account, category, amount):
 
 
 def parse_money(money):
-    return abs(locale.atof(money.replace(".", "")))
+    return locale.atof(money.replace(".", ""))
 
 
 def main(filename):
@@ -49,13 +49,24 @@ def main(filename):
         #
         # for now, I think we'll do the categories by hand
 
-        print_transaction(
-            dt,
-            row["Beschreibung"],
-            "Liabilities:Eurowings Gold",
-            "Expenses:TODO",
-            parse_money(row["Betrag"].replace(" €", "")),
-        )
+        money = parse_money(row["Betrag"].replace(" €", ""))
+
+        if money > 0:
+            print_transaction(
+                dt,
+                row["Beschreibung"],
+                "Liabilities:Eurowings Gold",
+                "Income:TODO",
+                -1 * money
+            )
+        else:
+            print_transaction(
+                dt,
+                row["Beschreibung"],
+                "Liabilities:Eurowings Gold",
+                "Expenses:TODO",
+                abs(money),
+            )
 
 
 if __name__ == "__main__":
